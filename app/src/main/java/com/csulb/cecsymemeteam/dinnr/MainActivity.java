@@ -2,6 +2,7 @@ package com.csulb.cecsymemeteam.dinnr;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -42,14 +43,53 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         actionbar.setDisplayHomeAsUpEnabled(true);
         actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
         updateProfile();
+        if(DataStorage.isRestaurantSeleccted()){
+            tintScreen(true);
+        }
 
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         Menu nav_menu = navigationView.getMenu();
+
+        //////////////////////////////////////////////////////////////////////////
+        //                       reset Button Listeners                         //
+        //////////////////////////////////////////////////////////////////////////
+        ImageButton reset = findViewById(R.id.main_resetButton);
+        reset.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                if(!DataStorage.getQueue().isEmpty()){
+                    DataStorage.getListOfRestaurants().clear();
+                    DataStorage.getListOfRestaurants().add(DataStorage.getQueue().get((int)(Math.random() * DataStorage.getQueue().size())));   //in line coding, the best coding :^)`
+                    DataStorage.getQueue().clear();
+                    DataStorage.setRestaurantSeleccted(true);
+                    gotoProfile(findViewById(R.id.main_resetButton));
+                    // Moves them to the profile screen
+                }
+                else{
+                    DataStorage.setBeenGenerated(false);
+                    if(DataStorage.isRestaurantSeleccted()){
+                        tintScreen(false);
+                    }
+                    DataStorage.setRestaurantSeleccted(false);
+                    ImageButton temp = findViewById(R.id.main_leftBtn);
+                    temp.setEnabled(true);
+                    temp = findViewById(R.id.main_rightBtn);
+                    temp.setEnabled(true);
+                    DataStorage.getListOfRestaurants().clear();
+                    DataStorage.generateRestaurants();
+                }
+                updateProfile();
+            }
+        });
+        //////////////////////////////////////////////////////////////////////////
+        //                       reset Button Listeners                         //
+        //////////////////////////////////////////////////////////////////////////
+
         //////////////////////////////////////////////////////////////////////////
         //                      profile Plaque Listeners                        //
         //////////////////////////////////////////////////////////////////////////
-
         if(DataStorage.isLoggedIn()) {
             nav_menu.findItem(R.id.Account).setVisible(true);
             nav_menu.findItem(R.id.newAccount).setVisible(false);
@@ -60,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onSwipeRight()
             {
-                if(!DataStorage.getListOfRestaurants().empty()) {
+                if(!DataStorage.getListOfRestaurants().empty() && !DataStorage.isRestaurantSeleccted()) {
                     DataStorage.getQueue().add(DataStorage.getListOfRestaurants().pop());
 
                 }
@@ -68,8 +108,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
             public void onSwipeLeft()
             {
-                if(!DataStorage.getListOfRestaurants().empty()) {
+                if(!DataStorage.getListOfRestaurants().empty() && !DataStorage.isRestaurantSeleccted()) {
                     DataStorage.getListOfRestaurants().pop();
+                    if(DataStorage.getListOfRestaurants().empty()){
+                    }
                 }
                 updateProfile();
             }
@@ -82,6 +124,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //                        like Button Listeners                         //
         //////////////////////////////////////////////////////////////////////////
         ImageButton like =(ImageButton) findViewById(R.id.main_rightBtn);
+        if(DataStorage.isRestaurantSeleccted()){
+            like.setEnabled(false);
+        }
         like.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -97,41 +142,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
-        //                       reset Button Listeners                         //
-        //////////////////////////////////////////////////////////////////////////
-        ImageButton reset =(ImageButton) findViewById(R.id.main_resetButton);
-        reset.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-                if(!DataStorage.getQueue().isEmpty()){
-                    DataStorage.getListOfRestaurants().clear();
-                    DataStorage.getListOfRestaurants().add(DataStorage.getQueue().get((int)(Math.random() * DataStorage.getQueue().size())));   //in line coding, the best coding :^)`
-                    DataStorage.getQueue().clear();
-
-                }
-                else{
-                    DataStorage.getListOfRestaurants().clear();
-                    DataStorage.setBeenGenerated(false);
-                    DataStorage.generateRestaurants();
-                }
-                updateProfile();
-            }
-        });
-        //////////////////////////////////////////////////////////////////////////
-        //                       reset Button Listeners                         //
-        //////////////////////////////////////////////////////////////////////////
-
-        //////////////////////////////////////////////////////////////////////////
         //                      dislike Button Listeners                        //
         //////////////////////////////////////////////////////////////////////////
         ImageButton dislike =(ImageButton) findViewById(R.id.main_leftBtn);
+        if(DataStorage.isRestaurantSeleccted()) {
+            dislike.setEnabled(false);
+        }
         dislike.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View view) {
-                if(!DataStorage.getListOfRestaurants().empty()) {
+                if(!DataStorage.getListOfRestaurants().empty() && !DataStorage.isRestaurantSeleccted()) {
                     DataStorage.getListOfRestaurants().pop();
+                    if(DataStorage.getListOfRestaurants().empty()){
+                    }
                 }
                 updateProfile();
             }
@@ -148,15 +172,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onSwipeRight()
             {
-                if(!DataStorage.getListOfRestaurants().empty()) {
+                if(!DataStorage.getListOfRestaurants().empty() && !DataStorage.isRestaurantSeleccted()) {
                     DataStorage.getQueue().add(DataStorage.getListOfRestaurants().pop());
                 }
                 updateProfile();
             }
             public void onSwipeLeft()
             {
-                if(!DataStorage.getListOfRestaurants().empty()) {
+                if(!DataStorage.getListOfRestaurants().empty() && !DataStorage.isRestaurantSeleccted()) {
                     DataStorage.getListOfRestaurants().pop();
+                    if(DataStorage.getListOfRestaurants().empty()){
+                    }
                 }
                 updateProfile();
             }
@@ -263,5 +289,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             startActivity(new Intent(this, FavoritesActivity.class));
         }
         return false;
+    }
+
+    public void tintScreen(boolean on){
+        ImageView temp = findViewById(R.id.main_screenTint);
+        if(on){
+            temp.setVisibility(View.VISIBLE);
+            temp = findViewById(R.id.main_screenTint2);
+            temp.setVisibility(View.VISIBLE);
+            temp = findViewById(R.id.main_screenTint3);
+            temp.setVisibility(View.VISIBLE);
+        }
+        else{
+            temp.setVisibility(View.INVISIBLE);
+            temp = findViewById(R.id.main_screenTint2);
+            temp.setVisibility(View.INVISIBLE);
+            temp = findViewById(R.id.main_screenTint3);
+            temp.setVisibility(View.INVISIBLE);
+        }
     }
 }

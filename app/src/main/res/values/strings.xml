@@ -15,6 +15,7 @@
     <string name="write_review">Write a review!</string>
     <string name="review_title">title of review</string>
     <string name="max_chars">characters left.</string>
+    <string name="get_directions">Get Directions</string>
 
     //Strings for signup
     <string name="first_name">First name</string>
@@ -47,7 +48,8 @@
     <string name="gender">Gender</string>
 
     //Strings for settings menu
-    <string name = "open">Open</string>
-    <string name = "close">Close</string>
+    <string name="open">Open</string>
+    <string name="close">Close</string>
+    <string name="title_activity_maps">Map</string>
 
 </resources>
